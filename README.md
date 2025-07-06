@@ -1,105 +1,153 @@
-
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/056fde13-5c55-41c8-8903-c4628b4ee1a4" alt="timecode_logo">
+<img src="https://github.com/user-attachments/assets/056fde13-5c55-41c8-8903-c4628b4ee1a4" alt="Timecode Logo" width="240">
 </div>
 
-## Timecoder
+# Timecoder
 
-A tool for analyzing YouTube video transcripts, segmenting them by topic, and generating timestamped summaries using AI.
+*YouTube Transcript Analyzer with AI-Powered Semantic Segmentation*
 
-### Features
-
-* Extracts transcripts from YouTube videos via YouTubeTranscriptApi
-* Segments transcripts into semantic groups using SentenceTransformer (`all-MiniLM-L6-v2`)
-* Annotates topics with KeyBERT or summarization (DistilBART)
-* Post-processes segments with a local LLM (Gemma3:12b) for improved punctuation and concise topic titles
-* GUI built with Tkinter and ttkbootstrap for user interaction
-* Displays results in Markdown format with timestamps
-* Logs processing steps and errors
+<div align="left">
   
-![Screenshot](https://github.com/user-attachments/assets/e41ee732-2dd7-4cee-8153-7b43bcb52c2b)
+  
+  ![Python](https://img.shields.io/badge/python-v3.8+-blue.svg)
+  ![License](https://img.shields.io/badge/license-MIT-green.svg)
+  ![AI](https://img.shields.io/badge/AI-NLP%20%7C%20Transformers-orange.svg)
+  ![GUI](https://img.shields.io/badge/GUI-Tkinter-red.svg)
+  ![Status](https://img.shields.io/badge/status-demo-yellow.svg)
+</div>
 
-### Requirements
+Timecoder is a Python application that analyzes YouTube video transcripts and organizes them into semantically related segments with timestamps. It's a demonstration project showcasing integration of modern NLP libraries for practical text analysis tasks.
 
-* Python 3.8+
-* Dependencies (see `requirements.txt`):
-   * regex
-   * nltk
-   * sentence-transformers
-   * transformers
-   * keybert
-   * torch
-   * youtube-transcript-api
-   * requests
-   * ttkbootstrap
-   * markdown
-   * tkinterweb
-* Ollama with Gemma3:12b model (11GB, requires stable internet and disk space)
-* NLTK data: `punkt`, `stopwords`
+### What makes it interesting?
+- **Semantic Analysis**: Uses SentenceTransformer embeddings to group transcript segments by meaning rather than arbitrary time intervals
+- **Multiple AI Models**: Combines different AI approaches - KeyBERT for keywords, DistilBART for summaries, and local Gemma3:12b for text improvement
+- **Local Processing**: Runs entirely on your machine without sending data to external services
+- **Real-world Application**: Solves the actual problem of navigating long YouTube videos
 
-### Installation
+### Who is it for?
+- **Students learning NLP**: Good example of combining multiple ML libraries
+- **Developers** exploring AI integration in desktop applications
+- **Content creators** who want to experiment with transcript analysis
+- **Anyone curious** about semantic text processing
 
-1. Clone the repository:
+### Why does it exist?
+This started as an experiment to see if AI could automatically create better structure for YouTube's often messy auto-generated transcripts. It's primarily a learning project that demonstrates practical applications of transformer models and semantic similarity.
 
-```
-git clone https://github.com/KazKozDev/timecoder.git
-cd timecoder
-```
+## Tech Stack
 
-2. Create and activate a virtual environment:
+**Core Technologies:**
+- **Python 3.8+** - Main language
+- **SentenceTransformer** - Text embeddings for semantic similarity
+- **KeyBERT** - Keyword extraction
+- **Transformers/DistilBART** - Text summarization
+- **Ollama + Gemma3:12b** - Local LLM for text post-processing
 
-```
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-```
+**Supporting Libraries:**
+- **NLTK** - Text preprocessing
+- **YouTube Transcript API** - Getting video transcripts
+- **Tkinter + ttkbootstrap** - Desktop GUI
+- **tkinterweb** - HTML rendering in GUI
+- **Requests** - HTTP communication
 
-3. Install dependencies:
+## Demo
 
-```
-pip install -r requirements.txt
-```
+![Timecoder Screenshot](https://github.com/user-attachments/assets/e41ee732-2dd7-4cee-8153-7b43bcb52c2b)
 
-4. Install Ollama and pull the model:
+## Installation & Setup
 
-```
-# Linux/WSL
-curl -fsSL https://ollama.com/install.sh | sh
-# macOS
-brew install ollama
-# Windows: Download from https://ollama.com/download
-ollama serve
-ollama pull gemma3:12b
-```
+### Prerequisites
+- Python 3.8+
+- ~11GB disk space for the Gemma3:12b model
+- Internet connection for initial setup
 
-5. Download NLTK data:
+### Installation Steps
 
-```python
-import nltk
-nltk.download('punkt')
-nltk.download('stopwords')
-```
+1. **Clone and setup**
+   ```bash
+   git clone https://github.com/KazKozDev/timecoder.git
+   cd timecoder
+   python -m venv venv
+   source venv/bin/activate  # or venv\Scripts\activate on Windows
+   pip install -r requirements.txt
+   ```
 
-### Usage
+2. **Install Ollama and model**
+   ```bash
+   # Install Ollama (see https://ollama.com for platform-specific instructions)
+   ollama serve
+   ollama pull gemma3:12b
+   ```
 
-1. Run the application:
+3. **Setup NLTK data**
+   ```python
+   python -c "import nltk; nltk.download('punkt'); nltk.download('stopwords')"
+   ```
 
-```
+4. **Update Hugging Face token**
+   Edit line 27 in `timecoder.py` and replace with your token (or remove the login line)
+
+### Quick Start
+```bash
 python timecoder.py
 ```
 
-2. Enter a YouTube video URL in the GUI
-3. Click "Analyze Transcript" to process
-4. View timestamped segments in the output window
-5. Copy results with the "Copy All" button
-6. Adjust font size via the dropdown (8-16px)
+## Usage
 
-### Notes
+1. Launch the application
+2. Paste a YouTube URL (must have available transcripts)
+3. Click "Analyze Transcript" and wait
+4. View the timestamped segments in the output
+5. Use "Copy All" to get the formatted text
 
-* Requires a valid YouTube URL with an available transcript
-* Processing time depends on video length and system resources
-* All operations run locally for privacy
-* Logs are displayed in the GUI and can be reviewed for errors
-* Hugging Face authentication is included (replace token in code)
+**Note**: Processing can take several minutes depending on video length and your hardware.
+
+## How It Works
+
+### Processing Pipeline
+1. **Extract transcript** from YouTube using their API
+2. **Clean and preprocess** text (remove filler words, normalize)
+3. **Create chunks** of transcript segments for analysis
+4. **Generate embeddings** using SentenceTransformer
+5. **Group by similarity** using cosine similarity thresholds
+6. **Extract topics** with KeyBERT or DistilBART
+7. **Post-process** with Gemma3:12b for better formatting
+8. **Display** results in GUI with timestamps
+
+### Key Implementation Details
+- Uses dynamic similarity thresholds to balance segment granularity
+- Falls back to forced segmentation if semantic grouping produces too few segments
+- Includes comprehensive error handling for flaky AI model responses
+- Processes everything locally for privacy
+
+## Limitations & Known Issues
+
+- **Processing Time**: Can be slow on older hardware (several minutes per hour of video)
+- **Memory Usage**: Requires significant RAM during processing (~2-4GB)
+- **Model Dependencies**: Relies on external models that may not always be available
+- **No Persistence**: Results aren't saved automatically
+- **Limited Error Recovery**: May fail on videos with unusual transcript formats
+- **No Testing**: This is a demo project without formal test coverage
+
+## Project Structure
+
+```
+timecoder/
+├── timecoder.py          # Main application
+├── requirements.txt      # Python dependencies
+├── README.md            # This file
+├── LICENSE              # MIT license
+└── .gitignore          # Git ignore rules
+```
+
+## Contributing
+
+Feel free to fork and experiment! This is a learning project, so I welcome:
+- Bug fixes
+- Performance improvements
+- UI enhancements
+- Better error handling
+
+No formal contribution guidelines - just open an issue or PR.
 
 ---
 
@@ -108,3 +156,12 @@ If you like this project, please give it a star ⭐
 For questions, feedback, or support, reach out to:
 
 [Artem KK](https://www.linkedin.com/in/kazkozdev/) | MIT [LICENSE](LICENSE)
+
+
+**Disclaimer**: This is a learning/demo project, not production software. Use at your own risk.
+
+<div align="center">
+
+*A practical exploration of NLP and semantic analysis*
+
+</div>
