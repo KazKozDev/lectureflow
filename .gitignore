@@ -1,41 +1,40 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
+# Environment
+.env
+.env.local
 
-# Virtual Environment
-venv/
-ENV/
-env/
+# Cache & DB
+data/cache/
+data/db/
+data/logs/
+__pycache__/
+*.pyc
+*.pyo
 
 # IDE
-.idea/
 .vscode/
+.idea/
 *.swp
 *.swo
 
-# macOS
+# OS
 .DS_Store
-.AppleDouble
-.LSOverride
-._*
+Thumbs.db
 
-# Project specific
-.qodo/
+# Python
+venv/
+.venv/
+dist/
+build/
+*.egg-info/
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# PyTorch
+*.pt
+*.pth
+
+# Roadmap temp file
+roadmap.txt

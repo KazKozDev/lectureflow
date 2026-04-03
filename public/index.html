@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LectureFlow | Turn YouTube videos into notes, quizzes, and study materials.</title>
+    
+    <!-- Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- External Libraries (Markdown parsing) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- App Styles & Scripts -->
+    <link rel="stylesheet" href="/ui/styles.css?v=20260401-31">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Settings -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div>
+                    <h1>LectureFlow</h1>
+                    <p class="brand-subtitle">Turn YouTube videos into notes, quizzes, and study materials.</p>
+                </div>
+            </div>
+            
+            <form id="settingsForm" class="settings-form">
+                <div class="form-group">
+                    <label for="providerSelect"><i class="fa-solid fa-server"></i> AI Provider</label>
+                    <select id="providerSelect" name="provider" required>
+                        <option value="" disabled selected>Loading providers...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="modelSelect"><i class="fa-solid fa-brain"></i> AI Model</label>
+                    <select id="modelSelect" name="model" required>
+                        <option value="" disabled selected>Select provider first</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="languageSelect"><i class="fa-solid fa-language"></i> Output Language</label>
+                    <select id="languageSelect" name="language">
+                        <option value="Auto">Auto (Same as video)</option>
+                        <option value="English">English</option>
+                        <option value="Russian">Русский</option>
+                        <option value="Spanish">Español</option>
+                        <option value="French">Français</option>
+                        <option value="German">Deutsch</option>
+                        <option value="Italian">Italiano</option>
+                        <option value="Portuguese">Português</option>
+                        <option value="Dutch">Nederlands</option>
+                        <option value="Polish">Polski</option>
+                        <option value="Ukrainian">Українська</option>
+                        <option value="Turkish">Türkçe</option>
+                        <option value="Arabic">العربية</option>
+                        <option value="Hindi">हिन्दी</option>
+                        <option value="Japanese">日本語</option>
+                        <option value="Korean">한국어</option>
+                        <option value="Chinese (Simplified)">中文（简体）</option>
+                        <option value="Chinese (Traditional)">中文（繁體）</option>
+                        <option value="Indonesian">Bahasa Indonesia</option>
+                        <option value="Vietnamese">Tiếng Việt</option>
+                        <option value="Thai">ไทย</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="useCache" name="useCache" checked>
+                        <span class="slider"></span>
+                        <span class="label-text">Use Cache</span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="isPlaylist" name="isPlaylist">
+                        <span class="slider"></span>
+                        <span class="label-text">Process Full Playlist</span>
+                    </label>
+                </div>
+            </form>
+            
+            <div class="history-panel">
+                <div class="history-header">
+                    <h4><i class="fa-solid fa-clock-rotate-left"></i> My Library</h4>
+                    <span class="badge" id="historyCount">0</span>
+                </div>
+                <div class="history-list" id="historyList">
+                    <!-- Dynamic history items loaded here -->
+                </div>
+            </div>
+
+            <div class="sidebar-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                <p>LectureFlow v0.2.0</p>
+                <button id="openSettingsBtn" style="background:rgba(37,39,44,0.9); border:1px solid var(--border-subtle); color:var(--text-muted); cursor:pointer; font-size:1rem; width:36px; height:36px; border-radius:999px; transition:all 0.2s;" title="API Keys Settings">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="header">
+                <div class="tabs">
+                    <button class="tab-btn active" data-target="analyze-tab"><i class="fa-solid fa-wand-magic-sparkles"></i> Analyze</button>
+                    <button class="tab-btn" data-target="chat-tab"><i class="fa-solid fa-comments"></i> Library Chat</button>
+                </div>
+            </header>
+
+            <!-- Analyze Tab Content -->
+            <div id="analyze-tab" class="tab-content active">
+                <div class="input-section">
+                    <form id="analyzeForm" class="analyze-form">
+                        <div class="search-box" style="margin-bottom: 1.5rem;">
+                            <i class="fa-brands fa-youtube search-icon"></i>
+                            <input type="url" id="youtubeUrl" name="url" placeholder="Paste YouTube Video or Playlist URL here..." required autocomplete="off">
+                        </div>
+
+                        <div class="content-tabs" style="margin-bottom: 1.5rem;">
+                            <div class="mode-cards row-layout">
+                                <label class="mode-card">
+                                    <input type="radio" name="mode" value="detailed" data-label="Detailed Conspectus" checked>
+                                    <span class="card-content">
+                                        <span>Detailed Conspectus</span>
+                                    </span>
+                                </label>
+                                <label class="mode-card">
+                                    <input type="radio" name="mode" value="brief" data-label="Brief Summary">
+                                    <span class="card-content">
+                                        <span>Brief Summary</span>
+                                    </span>
+                                </label>
+                                <label class="mode-card">
+                                    <input type="radio" name="mode" value="exam" data-label="Exam Prep (Facts)">
+                                    <span class="card-content">
+                                        <span>Exam Prep (Facts)</span>
+                                    </span>
+                                </label>
+                                <label class="mode-card">
+                                    <input type="radio" name="mode" value="flashcards" data-label="Flashcards (Q&A)">
+                                    <span class="card-content">
+                                        <span>Flashcards (Q&A)</span>
+                                    </span>
+                                </label>
+                                <label class="mode-card">
+                                    <input type="radio" name="mode" value="quiz" data-label="Quiz (Self-check)">
+                                    <span class="card-content">
+                                        <span>Quiz (Self-check)</span>
+                                    </span>
+                                </label>
+                                <label class="mode-card">
+                                    <input type="radio" name="mode" value="youtube_seo" data-label="YouTube SEO">
+                                    <span class="card-content">
+                                        <span>YouTube SEO Maker</span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-primary btn-generate" id="analyzeBtn" style="width: 100%; padding: 1.25rem; font-size: 1.15rem; justify-content: center; gap: 0.75rem;">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            <span id="analyzeBtnText">Analyze Detailed Conspectus</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Playlist Progress -->
+                <div id="playlistProgressContainer" class="state-container hidden playlist-progress">
+                    <h3 class="gradient-text"><i class="fa-solid fa-list"></i> Playlist Processing</h3>
+                    <p id="playlistStatus">Starting...</p>
+                    <div class="progress-bar-bg" style="margin-top:20px;width:100%;height:8px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden;">
+                        <div id="playlistProgressBar" class="progress-bar-fill" style="height:100%;width:0%;background:var(--primary-gradient);transition:width 0.3s ease;"></div>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loadingState" class="state-container hidden">
+                    <div class="loader-ripple">
+                        <div></div><div></div>
+                    </div>
+                    <h3 class="gradient-text">Building study materials...</h3>
+                    <p id="loadingStatusText">Downloading transcript, segmenting context, and applying AI models.</p>
+                    <div class="loading-progress">
+                        <div class="loading-progress-track">
+                            <div id="loadingProgressBar" class="loading-progress-fill"></div>
+                        </div>
+                        <div id="loadingProgressValue" class="loading-progress-value">0%</div>
+                    </div>
+                </div>
+
+                <!-- Error State -->
+                <div id="errorState" class="state-container hidden">
+                    <div class="error-panel">
+                        <div class="error-icon-wrap">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <h3 id="errorTitle" class="error-heading">Analysis Failed</h3>
+                        <p id="errorMessage" class="error-desc">Something went wrong while processing the video.</p>
+                        <div id="errorDetails" class="error-details hidden">
+                            <div class="error-detail-row" id="errorModelRow">
+                                <span class="error-label"><i class="fa-solid fa-brain"></i> Model</span>
+                                <span class="error-value" id="errorModelName">—</span>
+                            </div>
+                            <div class="error-detail-row" id="errorProviderRow">
+                                <span class="error-label"><i class="fa-solid fa-server"></i> Provider</span>
+                                <span class="error-value" id="errorProviderName">—</span>
+                            </div>
+                            <div class="error-detail-row" id="errorCodeRow">
+                                <span class="error-label"><i class="fa-solid fa-code"></i> Error</span>
+                                <code class="error-code-value" id="errorCodeValue">—</code>
+                            </div>
+                        </div>
+                        <div id="errorSuggestion" class="error-suggestion hidden">
+                            <i class="fa-solid fa-lightbulb"></i>
+                            <span id="errorSuggestionText"></span>
+                        </div>
+                        <button class="btn-primary btn-retry" onclick="document.getElementById('analyzeBtn').click()">
+                            <i class="fa-solid fa-rotate-right"></i> Retry Analysis
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Results View -->
+                <div id="resultsContainer" class="results-container hidden">
+                    <div class="results-header">
+                        <div>
+                            <h3 id="resultVideoTitle">LectureFlow Results</h3>
+                            <p class="stats" id="resultStats">0 segments processed</p>
+                        </div>
+                        <div class="actions">
+                            <button id="copyBtn" class="btn-icon" title="Copy Markdown"><i class="fa-regular fa-copy"></i></button>
+                            <button id="exportJsonBtn" class="btn-icon" title="Export JSON"><i class="fa-solid fa-code"></i></button>
+                            <button id="exportSrtBtn" class="btn-icon" title="Export SRT"><i class="fa-solid fa-closed-captioning"></i></button>
+                            <button id="exportYtBtn" class="btn-icon" title="Export YouTube Summary"><i class="fa-brands fa-youtube"></i></button>
+                        </div>
+                    </div>
+
+                    <div id="resultsLayout" class="results-layout">
+                        <aside id="videoPlayerPanel" class="video-player-panel hidden">
+                            <div class="video-player-header">
+                                <div>
+                                    <h4>Video Player</h4>
+                                    <p class="stats">Watch the source video alongside the analysis</p>
+                                </div>
+                                <button type="button" id="pinCurrentVideoBtn" class="video-side-btn">Pin</button>
+                            </div>
+                            <div class="video-frame-wrap">
+                                <iframe
+                                    id="videoPlayerFrame"
+                                    title="YouTube video player"
+                                    src=""
+                                    loading="lazy"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    allowfullscreen
+                                    referrerpolicy="strict-origin-when-cross-origin"
+                                ></iframe>
+                            </div>
+
+                            <div class="video-sidebar-sections">
+                                <section class="video-side-section">
+                                    <div class="video-side-header">
+                                        <h5>Pinned videos</h5>
+                                        <p class="stats">Keep your own shortlist here</p>
+                                    </div>
+                                    <div id="pinnedVideosList" class="video-card-list"></div>
+                                </section>
+
+                                <section class="video-side-section">
+                                    <div class="video-side-header">
+                                        <h5>From YouTube</h5>
+                                        <p class="stats">Recommended through Google YouTube API</p>
+                                    </div>
+                                    <div id="youtubeVideosList" class="video-card-list"></div>
+                                </section>
+                            </div>
+                        </aside>
+
+                        <div class="results-main">
+                            <div id="analysisSearchBar" class="analysis-searchbar hidden">
+                                <div>
+                                    <h4>Search In Analysis</h4>
+                                    <p class="stats" id="transcriptSearchMeta">Find words directly in the conspectus</p>
+                                </div>
+                                <label class="transcript-search">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                    <input
+                                        type="search"
+                                        id="transcriptSearchInput"
+                                        placeholder="Search in analysis..."
+                                        autocomplete="off"
+                                    >
+                                </label>
+                            </div>
+
+                            <div class="markdown-body" id="markdownOutput">
+                                <!-- Markdown content injected here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Tab Content -->
+            <div id="chat-tab" class="tab-content hidden">
+                <div class="chat-container">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message assistant-message">
+                            <div class="avatar"><i class="fa-solid fa-robot"></i></div>
+                            <div class="bubble">Hello! I am your LectureFlow Library Assistant. Ask me anything about the videos you've analyzed. I will cite the sources of my answers.</div>
+                        </div>
+                    </div>
+                    <div class="chat-input-area">
+                        <form id="chatForm" class="chat-form">
+                            <input type="text" id="chatInput" placeholder="Ask a question about your videos..." autocomplete="off" required>
+                            <button type="submit" class="btn-icon send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal-overlay hidden">
+        <div class="modal-content glass-panel" style="width: 400px; max-width: 90vw;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 class="gradient-text"><i class="fa-solid fa-key"></i> API Keys Setup</h3>
+                <button id="closeSettingsBtn" style="background:none; border:none; color:var(--text-muted); cursor:pointer;"><i class="fa-solid fa-xmark fa-lg"></i></button>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label style="margin-bottom:0.4rem;display:block;">OpenAI <span style="font-size: 0.75rem; color: var(--text-muted);">(optional)</span></label>
+                <input type="password" id="keyOpenAI" placeholder="sk-..." class="form-control" style="width: 100%; padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); background: rgba(0,0,0,0.2); color: white;">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label style="margin-bottom:0.4rem;display:block;">Anthropic <span style="font-size: 0.75rem; color: var(--text-muted);">(optional)</span></label>
+                <input type="password" id="keyAnthropic" placeholder="sk-ant-..." class="form-control" style="width: 100%; padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); background: rgba(0,0,0,0.2); color: white;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label style="margin-bottom:0.4rem;display:block;">Groq <span style="font-size: 0.75rem; color: var(--text-muted);">(optional)</span></label>
+                <input type="password" id="keyGroq" placeholder="gsk_..." class="form-control" style="width: 100%; padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); background: rgba(0,0,0,0.2); color: white;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label style="margin-bottom:0.4rem;display:block;">Grok (xAI) <span style="font-size: 0.75rem; color: var(--text-muted);">(optional)</span></label>
+                <input type="password" id="keyGrok" placeholder="xai-..." class="form-control" style="width: 100%; padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); background: rgba(0,0,0,0.2); color: white;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label style="margin-bottom:0.4rem;display:block;">YouTube Data API <span style="font-size: 0.75rem; color: var(--text-muted);">(optional)</span></label>
+                <input type="password" id="keyYouTube" placeholder="AIza..." class="form-control" style="width: 100%; padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); background: rgba(0,0,0,0.2); color: white;">
+            </div>
+            
+            <button id="saveKeysBtn" class="btn-primary" style="width: 100%; padding: 1rem;"><i class="fa-solid fa-save"></i> Save API Keys</button>
+        </div>
+    </div>
+
+    <script src="/ui/app.js?v=20260401-17"></script>
+</body>
+</html>

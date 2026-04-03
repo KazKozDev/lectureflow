@@ -1,27 +1,32 @@
-# Core Python libraries
-python>=3.8
-regex>=2023.10.3
-
-# Natural Language Processing
-nltk>=3.8.1
+# Core
+youtube-transcript-api>=0.6.1
 sentence-transformers>=2.2.2
-transformers>=4.35.0
 keybert>=0.7.0
 torch>=2.0.0
-
-# YouTube transcript extraction
-youtube-transcript-api>=0.6.1
-
-# HTTP requests
+nltk>=3.8.1
 requests>=2.31.0
+pyyaml>=6.0.0
+python-dotenv>=1.0.0
 
-# GUI dependencies
-tkinter>=8.6  # Included with Python standard library
-ttkbootstrap>=1.10.1
-markdown>=3.5.1
-tkinterweb>=3.17.0
+# LLM Providers
+openai>=1.0.0
+anthropic>=0.25.0
 
-# Logging and threading (included with Python standard library)
-logging
-threading
-queue
+# Audio processing
+yt-dlp>=2024.3.10
+openai-whisper>=20231117
+
+# API
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.0.0
+
+# Code Quality
+black>=24.0.0
+ruff>=0.4.0
+
+# Testing
+pytest>=8.0.0
+pytest-cov>=4.0.0
+pytest-asyncio>=0.23.0
+httpx>=0.27.0

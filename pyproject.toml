@@ -1,0 +1,35 @@
+[project]
+name = "timecoder"
+version = "0.2.0"
+description = "YouTube transcript analyzer with AI-powered semantic segmentation."
+requires-python = ">=3.11"
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+exclude = '''
+(
+  /timecoder\.py
+  | /venv
+)
+'''
+
+[tool.ruff]
+line-length = 88
+exclude = ["timecoder.py", "venv", ".venv"]
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "I",
+    "UP",
+    "B",
+]
+ignore = [
+    "E501",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

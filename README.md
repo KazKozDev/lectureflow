@@ -1,167 +1,195 @@
-<div align="center">
-<img src="https://github.com/user-attachments/assets/056fde13-5c55-41c8-8903-c4628b4ee1a4" alt="Timecode Logo" width="240">
-</div>
+# LectureFlow
 
-# Timecoder
+Transform YouTube videos into structured notes, flashcards, and quizzes using AI-powered semantic analysis.
 
-*YouTube Transcript Analyzer with AI-Powered Semantic Segmentation*
+![Beta](https://img.shields.io/badge/status-beta-yellow)
+![MIT License](https://img.shields.io/badge/license-MIT-blue)
+![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
 
-<div align="left">
-  
-  
-  ![Python](https://img.shields.io/badge/python-v3.8+-blue.svg)
-  ![License](https://img.shields.io/badge/license-MIT-green.svg)
-  ![AI](https://img.shields.io/badge/AI-NLP%20%7C%20Transformers-orange.svg)
-  ![GUI](https://img.shields.io/badge/GUI-Tkinter-red.svg)
-  ![Status](https://img.shields.io/badge/status-demo-yellow.svg)
-</div>
+## Highlights
 
-Timecoder is a Python application that analyzes YouTube video transcripts and organizes them into semantically related segments with timestamps. It's a demonstration project showcasing integration of modern NLP libraries for practical text analysis tasks.
-
-### What makes it interesting?
-- **Semantic Analysis**: Uses SentenceTransformer embeddings to group transcript segments by meaning rather than arbitrary time intervals
-- **Multiple AI Models**: Combines different AI approaches - KeyBERT for keywords, DistilBART for summaries, and local Gemma3:12b for text improvement
-- **Local Processing**: Runs entirely on your machine without sending data to external services
-- **Real-world Application**: Solves the actual problem of navigating long YouTube videos
-
-### Who is it for?
-- **Students learning NLP**: Good example of combining multiple ML libraries
-- **Developers** exploring AI integration in desktop applications
-- **Content creators** who want to experiment with transcript analysis
-- **Anyone curious** about semantic text processing
-
-### Why does it exist?
-This started as an experiment to see if AI could automatically create better structure for YouTube's often messy auto-generated transcripts. It's primarily a learning project that demonstrates practical applications of transformer models and semantic similarity.
-
-## Tech Stack
-
-**Core Technologies:**
-- **Python 3.8+** - Main language
-- **SentenceTransformer** - Text embeddings for semantic similarity
-- **KeyBERT** - Keyword extraction
-- **Transformers/DistilBART** - Text summarization
-- **Ollama + Gemma3:12b** - Local LLM for text post-processing
-
-**Supporting Libraries:**
-- **NLTK** - Text preprocessing
-- **YouTube Transcript API** - Getting video transcripts
-- **Tkinter + ttkbootstrap** - Desktop GUI
-- **tkinterweb** - HTML rendering in GUI
-- **Requests** - HTTP communication
+- **Semantic segmentation** — groups transcript chunks by meaning using sentence embeddings, not fixed time windows
+- **5 LLM providers** — switch between OpenAI, Anthropic Claude, Groq, Grok, and local Ollama without code changes
+- **6 output modes** — detailed notes, briefs, exam prep, flashcards, quizzes, and YouTube SEO descriptions
+- **Full-text search** — SQLite FTS5 index across all analyzed videos for instant retrieval
+- **RAG-powered Q&A** — ask questions about your video library and get sourced answers
 
 ## Demo
 
-![Timecoder Screenshot](https://github.com/user-attachments/assets/e41ee732-2dd7-4cee-8153-7b43bcb52c2b)
+<img src="images/timecode_logo.png" alt="LectureFlow" width="200">
 
-## Installation & Setup
+<!-- TODO: Add demo GIF or screenshot of the web UI -->
 
-### Prerequisites
-- Python 3.8+
-- ~11GB disk space for the Gemma3:12b model
-- Internet connection for initial setup
+## Table of Contents
 
-### Installation Steps
+- [Overview](#overview)
+- [Motivation](#motivation)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Quick Start](#quick-start)
+- [Usage](#usage)
+- [Project Structure](#project-structure)
+- [Status](#status)
+- [Testing](#testing)
+- [Contributing](#contributing)
 
-1. **Clone and setup**
-   ```bash
-   git clone https://github.com/KazKozDev/timecoder.git
-   cd timecoder
-   python -m venv venv
-   source venv/bin/activate  # or venv\Scripts\activate on Windows
-   pip install -r requirements.txt
-   ```
+## Overview
 
-2. **Install Ollama and model**
-   ```bash
-   # Install Ollama (see https://ollama.com for platform-specific instructions)
-   ollama serve
-   ollama pull gemma3:12b
-   ```
+LectureFlow fetches YouTube transcripts, segments them semantically using sentence embeddings, annotates topics with keyword extraction, and enhances the output through LLM post-processing. Results are stored in a searchable SQLite database and served through a FastAPI backend with a web UI. Built for students, researchers, and anyone who learns from video content.
 
-3. **Setup NLTK data**
-   ```python
-   python -c "import nltk; nltk.download('punkt'); nltk.download('stopwords')"
-   ```
+## Motivation
 
-4. **Update Hugging Face token**
-   Edit line 27 in `timecoder.py` and replace with your token (or remove the login line)
+Taking notes from video lectures is slow and produces incomplete results. Existing transcript tools dump raw text without structure. LectureFlow applies NLP segmentation to find natural topic boundaries, then uses LLMs to transform raw transcript chunks into polished, study-ready materials in the format you need — whether that's detailed notes, flashcards for spaced repetition, or quiz questions for self-testing.
 
-### Quick Start
+## Features
+
+- Fetch transcripts from YouTube videos and playlists (with Whisper audio fallback)
+- Semantic segmentation via sentence-transformer embeddings (all-MiniLM-L6-v2)
+- Topic annotation using KeyBERT keyword extraction
+- LLM post-processing in 6 modes: `detailed`, `brief`, `exam`, `flashcards`, `quiz`, `youtube_seo`
+- Multi-provider LLM support with hot-switching via API or UI
+- Streaming analysis progress via NDJSON
+- Video library with SQLite persistence and FTS5 full-text search
+- RAG-based Q&A agent over the video library
+- Semantic video recommendations (cosine similarity) and YouTube search recommendations
+- Export to JSON, Markdown, SRT, and YouTube description formats
+- Web UI with provider/model selection, library browser, and real-time progress
+- Docker deployment with optional local Ollama
+
+## Architecture
+
+```mermaid
+flowchart LR
+    A[YouTube URL] --> B[Transcript Fetcher]
+    B --> C[Semantic Segmenter]
+    C --> D[Topic Annotator]
+    D --> E[LLM Post-Processor]
+    E --> F[SQLite + FTS5]
+    F --> G[FastAPI]
+    G --> H[Web UI]
+    G --> I[Export API]
+    G --> J[RAG Agent]
+```
+
+| Component | Module | Responsibility |
+|-----------|--------|----------------|
+| Transcript | `src/core/transcript.py` | Fetches YouTube transcripts, Whisper fallback |
+| Segmenter | `src/core/segmenter.py` | Groups chunks by semantic similarity |
+| Annotator | `src/core/annotator.py` | Extracts topic labels via KeyBERT |
+| Post-processor | `src/core/postprocessor.py` | Enhances segments through LLM |
+| Pipeline | `src/core/pipeline.py` | Orchestrates the full analysis flow |
+| LLM Factory | `src/llm/factory.py` | Creates provider-specific clients |
+| Database | `src/db/` | SQLite persistence with FTS5 search |
+| API | `src/api/app.py` | REST endpoints + streaming |
+| Export | `src/export/formatters.py` | JSON, Markdown, SRT, YouTube formats |
+
+## Tech Stack
+
+- **Language:** Python 3.11+
+- **API:** FastAPI + Uvicorn
+- **ML/NLP:** Sentence-Transformers, KeyBERT, PyTorch, NLTK
+- **LLM Providers:** OpenAI, Anthropic, Groq, Grok, Ollama
+- **Audio:** yt-dlp, OpenAI Whisper
+- **Database:** SQLite with FTS5
+- **Frontend:** Vanilla JavaScript
+- **Deployment:** Docker + Docker Compose
+
+## Quick Start
+
 ```bash
-python timecoder.py
+# Clone
+git clone https://github.com/KazKozDev/lectureflow.git
+cd lectureflow
+
+# Install dependencies
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# Configure API keys
+cp .env.example .env
+# Edit .env with your API keys
+
+# Run
+uvicorn src.api.app:app --host 0.0.0.0 --port 8000
+```
+
+Open `http://localhost:8000` in your browser.
+
+**Docker alternative:**
+
+```bash
+cp .env.example .env
+# Edit .env with your API keys
+docker compose up
+
+# With local Ollama:
+docker compose --profile local up
 ```
 
 ## Usage
 
-1. Launch the application
-2. Paste a YouTube URL (must have available transcripts)
-3. Click "Analyze Transcript" and wait
-4. View the timestamped segments in the output
-5. Use "Copy All" to get the formatted text
+**Analyze a video via API:**
 
-**Note**: Processing can take several minutes depending on video length and your hardware.
+```bash
+curl -X POST http://localhost:8000/api/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://youtube.com/watch?v=VIDEO_ID", "mode": "detailed"}'
+```
 
-## How It Works
+**Available modes:** `detailed`, `brief`, `exam`, `flashcards`, `quiz`, `youtube_seo`
 
-### Processing Pipeline
-1. **Extract transcript** from YouTube using their API
-2. **Clean and preprocess** text (remove filler words, normalize)
-3. **Create chunks** of transcript segments for analysis
-4. **Generate embeddings** using SentenceTransformer
-5. **Group by similarity** using cosine similarity thresholds
-6. **Extract topics** with KeyBERT or DistilBART
-7. **Post-process** with Gemma3:12b for better formatting
-8. **Display** results in GUI with timestamps
+**Search your library:**
 
-### Key Implementation Details
-- Uses dynamic similarity thresholds to balance segment granularity
-- Falls back to forced segmentation if semantic grouping produces too few segments
-- Includes comprehensive error handling for flaky AI model responses
-- Processes everything locally for privacy
+```bash
+curl -X POST http://localhost:8000/api/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "machine learning"}'
+```
 
-## Limitations & Known Issues
+**Ask the Q&A agent:**
 
-- **Processing Time**: Can be slow on older hardware (several minutes per hour of video)
-- **Memory Usage**: Requires significant RAM during processing (~2-4GB)
-- **Model Dependencies**: Relies on external models that may not always be available
-- **No Persistence**: Results aren't saved automatically
-- **Limited Error Recovery**: May fail on videos with unusual transcript formats
-- **No Testing**: This is a demo project without formal test coverage
+```bash
+curl -X POST http://localhost:8000/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"query": "What topics were covered in the last video?"}'
+```
 
 ## Project Structure
 
 ```
-timecoder/
-├── timecoder.py          # Main application
-├── requirements.txt      # Python dependencies
-├── README.md            # This file
-├── LICENSE              # MIT license
-└── .gitignore          # Git ignore rules
+src/
+  api/            # FastAPI application and endpoints
+  core/           # Analysis pipeline (segmenter, annotator, post-processor, agent)
+  llm/            # LLM provider clients (OpenAI, Anthropic, Groq, Grok, Ollama)
+  db/             # SQLite models and repository
+  export/         # Output formatters (JSON, Markdown, SRT, YouTube)
+  handlers/       # Error handling
+  utils/          # Logging, caching, rate limiting
+config/           # YAML configs for models, prompts, logging
+public/           # Web UI (HTML, JS, CSS)
+tests/            # Pytest test suite
+```
+
+## Status
+
+**Stage:** Beta
+
+<!-- TODO: Add roadmap items -->
+
+## Testing
+
+```bash
+pytest
 ```
 
 ## Contributing
 
-Feel free to fork and experiment! This is a learning project, so I welcome:
-- Bug fixes
-- Performance improvements
-- UI enhancements
-- Better error handling
-
-No formal contribution guidelines - just open an issue or PR.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---
 
-If you like this project, please give it a star ⭐
+MIT — see [LICENSE](LICENSE)
 
-For questions, feedback, or support, reach out to:
-
-[Artem KK](https://www.linkedin.com/in/kazkozdev/) | MIT [LICENSE](LICENSE)
-
-
-**Disclaimer**: This is a learning/demo project, not production software. Use at your own risk.
-
-<div align="center">
-
-*A practical exploration of NLP and semantic analysis*
-
-</div>
+Artem KK — [kazkozdev@gmail.com](mailto:kazkozdev@gmail.com)
