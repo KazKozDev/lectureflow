@@ -1,61 +1,62 @@
-# LectureFlow
+<p align="center">
+  <img src="images/timecode_logo.png" alt="LectureFlow" width="180">
+</p>
 
-Transform YouTube videos into structured notes, flashcards, and quizzes using AI-powered semantic analysis.
+<h1 align="center">LectureFlow</h1>
 
-![Beta](https://img.shields.io/badge/status-beta-yellow)
-![MIT License](https://img.shields.io/badge/license-MIT-blue)
-![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
+<p align="center">
+  Makes educational YouTube videos easier to absorb and remember — by turning them into structured notes, flashcards, and quizzes with AI-powered semantic analysis.
+</p>
 
-## Highlights
-
-- **Semantic segmentation** — groups transcript chunks by meaning using sentence embeddings, not fixed time windows
-- **5 LLM providers** — switch between OpenAI, Anthropic Claude, Groq, Grok, and local Ollama without code changes
-- **6 output modes** — detailed notes, briefs, exam prep, flashcards, quizzes, and YouTube SEO descriptions
-- **Full-text search** — SQLite FTS5 index across all analyzed videos for instant retrieval
-- **RAG-powered Q&A** — ask questions about your video library and get sourced answers
-
-## Demo
-
-<img src="images/timecode_logo.png" alt="LectureFlow" width="200">
+<p align="center">
+  <img src="https://img.shields.io/badge/status-beta-yellow" alt="Beta">
+  <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
+  <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License">
+  <img src="https://img.shields.io/badge/docker-ready-blue?logo=docker" alt="Docker">
+  <img src="https://img.shields.io/badge/LLM-5_providers-green" alt="5 LLM Providers">
+</p>
 
 <!-- TODO: Add demo GIF or screenshot of the web UI -->
 
-## Table of Contents
+## Why LectureFlow
 
-- [Overview](#overview)
-- [Motivation](#motivation)
-- [Features](#features)
-- [Architecture](#architecture)
-- [Tech Stack](#tech-stack)
-- [Quick Start](#quick-start)
-- [Usage](#usage)
-- [Project Structure](#project-structure)
-- [Status](#status)
-- [Testing](#testing)
-- [Contributing](#contributing)
+Taking notes from video lectures is slow. Existing transcript tools dump raw text without structure. LectureFlow segments transcripts by meaning — not by fixed time windows — then uses LLMs to turn raw chunks into study-ready materials: detailed notes, flashcards, quizzes, or exam prep.
 
-## Overview
-
-LectureFlow fetches YouTube transcripts, segments them semantically using sentence embeddings, annotates topics with keyword extraction, and enhances the output through LLM post-processing. Results are stored in a searchable SQLite database and served through a FastAPI backend with a web UI. Built for students, researchers, and anyone who learns from video content.
-
-## Motivation
-
-Taking notes from video lectures is slow and produces incomplete results. Existing transcript tools dump raw text without structure. LectureFlow applies NLP segmentation to find natural topic boundaries, then uses LLMs to transform raw transcript chunks into polished, study-ready materials in the format you need — whether that's detailed notes, flashcards for spaced repetition, or quiz questions for self-testing.
+- **Semantic segmentation** — sentence embeddings group related content into coherent topics
+- **5 LLM providers** — OpenAI, Anthropic, Groq, Grok, and local Ollama, hot-switchable without code changes
+- **6 output modes** — `detailed`, `brief`, `exam`, `flashcards`, `quiz`, `youtube_seo`
+- **Search & Q&A** — FTS5 full-text search + RAG agent across your entire video library
+- **Self-hosted** — FastAPI backend, web UI, Docker-ready, no GPU required
 
 ## Features
+
+### Core Analysis
 
 - Fetch transcripts from YouTube videos and playlists (with Whisper audio fallback)
 - Semantic segmentation via sentence-transformer embeddings (all-MiniLM-L6-v2)
 - Topic annotation using KeyBERT keyword extraction
+
+### LLM Integration
+
 - LLM post-processing in 6 modes: `detailed`, `brief`, `exam`, `flashcards`, `quiz`, `youtube_seo`
-- Multi-provider LLM support with hot-switching via API or UI
+- Multi-provider support with hot-switching via API or UI (OpenAI, Anthropic, Groq, Grok, Ollama)
 - Streaming analysis progress via NDJSON
+
+### Search & RAG
+
 - Video library with SQLite persistence and FTS5 full-text search
 - RAG-based Q&A agent over the video library
-- Semantic video recommendations (cosine similarity) and YouTube search recommendations
+- Semantic video recommendations (cosine similarity) and YouTube search suggestions
+
+### Export & UI
+
 - Export to JSON, Markdown, SRT, and YouTube description formats
 - Web UI with provider/model selection, library browser, and real-time progress
-- Docker deployment with optional local Ollama
+
+### Deployment
+
+- Docker Compose with optional local Ollama for fully offline inference
+- Single-command startup, persistent data volumes
 
 ## Architecture
 
@@ -97,40 +98,54 @@ flowchart LR
 
 ## Quick Start
 
+### Prerequisites
+
+- **Python 3.11+**
+- **GPU not required** — all embeddings and NLP run on CPU (sentence-transformers, KeyBERT)
+- **At least one LLM API key** — or a local [Ollama](https://ollama.com) installation for fully offline use
+
+| API Key | Env Variable | Required |
+|---------|-------------|----------|
+| OpenAI | `OPENAI_API_KEY` | No* |
+| Anthropic | `ANTHROPIC_API_KEY` | No* |
+| Groq | `GROQ_API_KEY` | No* |
+| Grok (xAI) | `XAI_API_KEY` | No* |
+| Ollama | — | No* |
+
+*At least one provider is required. Ollama needs no API key but must be running locally.
+
+### Local Setup
+
 ```bash
-# Clone
 git clone https://github.com/KazKozDev/lectureflow.git
 cd lectureflow
 
-# Install dependencies
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 
-# Configure API keys
 cp .env.example .env
-# Edit .env with your API keys
+# Edit .env — add your API key(s) and set LLM_PROVIDER
 
-# Run
 uvicorn src.api.app:app --host 0.0.0.0 --port 8000
 ```
 
 Open `http://localhost:8000` in your browser.
 
-**Docker alternative:**
+### Docker
 
 ```bash
 cp .env.example .env
 # Edit .env with your API keys
 docker compose up
 
-# With local Ollama:
+# With local Ollama (fully offline):
 docker compose --profile local up
 ```
 
 ## Usage
 
-**Analyze a video via API:**
+**Analyze a video:**
 
 ```bash
 curl -X POST http://localhost:8000/api/analyze \
@@ -172,21 +187,44 @@ public/           # Web UI (HTML, JS, CSS)
 tests/            # Pytest test suite
 ```
 
+## Testing
+
+```bash
+# Run full test suite
+pytest
+
+# With coverage report
+pytest --cov=src --cov-report=term-missing
+
+# Run a specific test file
+pytest tests/test_pipeline.py -v
+```
+
+Test suite covers: pipeline, database, formatters, LLM clients, caching, rate limiter, error handling, and transcript fetching.
+
+## Known Limitations
+
+- Transcript quality depends on YouTube's auto-generated captions; videos without captions fall back to Whisper (slower, requires `yt-dlp` + `ffmpeg`)
+- Semantic segmentation uses CPU-only embeddings — first run downloads the model (~90 MB)
+- Ollama provider requires a separately running Ollama instance
+- No user authentication — the API is designed for local/personal use
+- Batch playlist processing is sequential, not parallel
+
+## Contributing
+
+Contributions are welcome. Fork the repo, create a feature branch, and open a PR.
+
+- **Code style:** [Black](https://github.com/psf/black) (line-length 88) + [Ruff](https://github.com/astral-sh/ruff) for linting
+- **Commits:** use conventional format — `feat:`, `fix:`, `refactor:`, `docs:`, `test:`
+- **Tests:** run `pytest` before submitting
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for full guidelines.
+
 ## Status
 
 **Stage:** Beta
 
 <!-- TODO: Add roadmap items -->
-
-## Testing
-
-```bash
-pytest
-```
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---
 
