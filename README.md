@@ -61,7 +61,7 @@ Taking notes from video lectures is slow. Existing transcript tools dump raw tex
 ## Architecture
 
 ```mermaid
-flowchart LR
+flowchart TB
     A[YouTube URL] --> B[Transcript Fetcher]
     B --> C[Semantic Segmenter]
     C --> D[Topic Annotator]
