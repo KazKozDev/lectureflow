@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/docs/demoflow.png" alt="LectureFlow Demo Flow" width="980">
+  <img src="docs/assets/demoflow.png" alt="LectureFlow Demo Flow" width="980">
 </p>
 
 ## Why LectureFlow
